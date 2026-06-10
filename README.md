@@ -1,2 +1,2 @@
 # AviFarm
-Application gestion poulets de chair 
+Application de gestion des poulets de chair 
