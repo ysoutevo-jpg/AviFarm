@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AviFarm – Gestion Poulets</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:sans-serif;background:#0f1410;color:#e8f0e9;min-height:100vh;}
+.app{max-width:420px;margin:0 auto;padding:16px 16px 80px;}
+.logo{text-align:center;padding:20px 0 14px;}
+.logo h1{font-size:26px;font-weight:800;color:#7ecb5a;}
+.logo p{font-size:13px;color:#7a9080;}
+.card{background:#1c2620;border:1px solid #2a3830;border-radius:14px;padding:16px;margin-bottom:14px;}
+.card h2{font-size:15px;font-weight:700;color:#7ecb5a;margin-bottom:12px;}
+input{width:100%;background:#0f1410;border:1px solid #2a3830;border-radius:8px;color:#e8f0e9;font-size:16px;padding:10px 12px;margin-bottom:8px;}
+.row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #2a3830;font-size:13px;}
+.row:last-child{border:none;}
+.val{font-weight:700;color:#7ecb5a;}
+.big{font-size:38px;font-weight:800;text-align:center;color:#7ecb5a;padding:10px 0;}
+.sub{font-size:12px;color:#7a9080;text-align:center;}
+.alert{background:#e05c3a22;border:1px solid #e05c3a55;border-radius:10px;padding:12px;margin:10px 0;font-size:13px;color:#e05c3a;}
+.ok{background:#7ecb5a22;border:1px solid #7ecb5a55;border-radius:10px;padding:12px;margin:10px 0;font-size:13px;color:#7ecb5a;}
+.task{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #2a3830;cursor:pointer;}
+.task:last-child{border:none;}
+.circle{width:24px;height:24px;border-radius:50%;border:2px solid #2a3830;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;transition:all .2s;}
+.done .circle{background:#7ecb5a;border-color:#7ecb5a;color:#0f1410;}
+.done span{text-decoration:line-through;color:#7a9080;}
+.nav{display:flex;background:#161d18;border-top:1px solid #2a3830;position:fixed;bottom:0;left:0;right:0;max-width:420px;margin:0 auto;}
+.ni{flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 4px;cursor:pointer;font-size:10px;color:#7a9080;gap:3px;border:none;background:none;}
+.ni.on{color:#7ecb5a;}
+.ni .ico{font-size:20px;}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="logo"><h1>🐔 AviFarm</h1><p>Gestion Poulets de Chair</p></div>
+<div id="accueil">
+<div class="card">
+<h2>⚙️ Mon élevage</h2>
+<input type="number" id="nPous" placeholder="Nombre de poussins" oninput="calc()">
+<input type="number" id="nJour" placeholder="Jour actuel (ex: 1)" oninput="calc()">
+<div id="res"></div>
+</div>
+<div class="card">
+<h2>📅 Arrivée des poussins</h2>
+<input type="date" id="dateArr" onchange="calcDate()">
+<div id="resDate"></div>
+</div>
+</div>
+<div id="programme" style="display:none">
+<div class="card">
+<h2>📋 Programme du jour</h2>
+<div id="prog"></div>
+<h2 style="margin-top:14px">✅ Tâches</h2>
+<div id="tasks"></div>
+</div>
+</div>
+</div>
+<nav class="nav">
+<button class="ni on" id="b1" onclick="show('accueil')"><span class="ico">🏠</span>Accueil</button>
+<button class="ni" id="b2" onclick="show('programme')"><span class="ico">📋</span>Programme</button>
+</nav>
+<script>
+const fp=[0,20,22,25,28,32,36,40,46,52,58,65,72,80,88,97,106,116,126,137,148,160,172,184,197,210,223,237,252,268,284,300,316,332,348,365,381,397,413,429,444,460,475];
+function feed(d,n){return Math.round((fp[Math.min(d,42)]||475)*n/1000*10)/10;}
+function water(d,n){return Math.round(feed(d,n)*1.8*10)/10;}
+function phase(d){return d<=14?"Démarrage":d<=28?"Croissance":"Finition";}
+function temp(d){return d<=7?"32–34°C":d<=14?"28–32°C":d<=21?"26–30°C":"22–26°C";}
+function calc(){
+  const n=parseInt(document.getElementById('nPous').value)||0;
+    const d=parseInt(document.getElementById('nJour').value)||0;
+      const r=document.getElementById('res');
+        if(!n||!d){r.innerHTML='';return;}
+          r.innerHTML=`<div class="row"><span>Phase</span><span class="val">${phase(d)}</span></div>
+            <div class="row"><span>Aliment</span><span class="val">${feed(d,n)} kg</span></div>
+              <div class="row"><span>Eau</span><span class="val">${water(d,n)} L</span></div>
+                <div class="row"><span>Température</span><span class="val">${temp(d)}</span></div>`;
+                  updateProg(n,d);
+                  }
+                  function updateProg(n,d){
+                    document.getElementById('prog').innerHTML=`
+                      <div class="big">${feed(d,n)} kg</div>
+                        <div class="sub">d'aliment pour ${n} poulets</div>
+                          <div class="row" style="margin-top:10px"><span>💧 Eau</span><span class="val">${water(d,n)} L</span></div>
+                            <div class="row"><span>🌡️ Température</span><span class="val">${temp(d)}</span></div>
+                              <div class="row"><span>📊 Phase</span><span class="val">${phase(d)}</span></div>
+                                <div class="row"><span>💡 Lumière</span><span class="val">${d<=7?"24h":d<=14?"22h":d<=21?"20h":"16h"}</span></div>`;
+                                  const taches=[
+                                      {ico:"🌡️",txt:"Vérifier la température"},
+                                          {ico:"💧",txt:"Nettoyer les abreuvoirs"},
+                                              {ico:"🌾",txt:`Distribuer ${feed(d,n)} kg d'aliment`},
+                                                  {ico:"💡",txt:"Vérifier l'éclairage"},
+                                                      {ico:"👁️",txt:"Observer le comportement"}
+                                                        ];
+                                                          document.getElementById('tasks').innerHTML=taches.map((t,i)=>
+                                                              `<div class="task" id="t${i}" onclick="tick(${i})">
+                                                                  <div class="circle" id="c${i}"></div>
+                                                                      <span>${t.ico} ${t.txt}</span></div>`).join('');
+                                                                      }
+                                                                      function tick(i){
+                                                                        const t=document.getElementById('t'+i);
+                                                                          const c=document.getElementById('c'+i);
+                                                                            const on=t.classList.toggle('done');
+                                                                              c.textContent=on?'✓':'';
+                                                                              }
+                                                                              function calcDate(){
+                                                                                const d=document.getElementById('dateArr').value;
+                                                                                  if(!d)return;
+                                                                                    const diff=Math.ceil((new Date(d)-new Date())/(86400000));
+                                                                                      const r=document.getElementById('resDate');
+                                                                                        if(diff>0)r.innerHTML=`<div class="alert">⏳ Arrivée dans <b>${diff} jours</b> — Préparez le bâtiment !</div>`;
+                                                                                          else if(diff===0)r.innerHTML=`<div class="ok">🐣 Les poussins arrivent AUJOURD'HUI !</div>`;
+                                                                                            else r.innerHTML=`<div class="ok">✅ Élevage en cours — Jour ${Math.abs(diff)}</div>`;
+                                                                                            }
+                                                                                            function show(p){
+                                                                                              document.getElementById('accueil').style.display=p==='accueil'?'block':'none';
+                                                                                                document.getElementById('programme').style.display=p==='programme'?'block':'none';
+                                                                                                  document.getElementById('b1').className='ni'+(p==='accueil'?' on':'');
+                                                                                                    document.getElementById('b2').className='ni'+(p==='programme'?' on':'');
+                                                                                                    }
+                                                                                                    </script>
+                                                                                                    </body>
+                                                                                                    </html>
+                                                                                                    
